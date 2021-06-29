@@ -1,12 +1,26 @@
 require("dotenv").config({ path: "./config/config.env" });
 const express = require("express");
-const connectDB = require("./config/db");
 const colors = require("colors");
+const morgan = require("morgan");
+
+const connectDB = require("./config/db");
 
 const app = express();
 
+// database connection.
 connectDB();
 
+// some middlewares.
+app.use(express.json());
+
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+// routes
+app.use("/api/v1/bootcamps", require("./routes/bootcamps"));
+
+// server config.
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   console.log(
@@ -14,6 +28,7 @@ const server = app.listen(PORT, () => {
   );
 });
 
+// handling promise rejection. and shutting down the server.
 process.on("unhandledRejection", (err, promise) => {
   console.log(`Error: ${err.message}`.red);
   server.close(() => process.exit(1));
